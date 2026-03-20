@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="NexusChat — A premium AI chatbot powered by OpenRouter">
+    <title>NexusChat — AI Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=5">
+</head>
+<body>
+
+<!-- Sexy HD Liquid Background -->
+<div class="liquid-bg" id="liquidBg">
+    <div class="liquid-blob"></div>
+    <div class="liquid-blob"></div>
+    <div class="liquid-blob"></div>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <div class="logo-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0" y1="0" x2="24" y2="24">
+                            <stop stop-color="var(--accent-1)"/>
+                            <stop offset="1" stop-color="var(--accent-2)"/>
+                        </linearGradient>
+                        <linearGradient id="logoGrad2" x1="24" y1="0" x2="0" y2="24">
+                            <stop stop-color="var(--accent-2)"/>
+                            <stop offset="1" stop-color="var(--accent-3)"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="12" cy="12" r="3" fill="url(#logoGrad)"/>
+                    <ellipse cx="12" cy="12" rx="10" ry="4" stroke="url(#logoGrad)" transform="rotate(45 12 12)"/>
+                    <ellipse cx="12" cy="12" rx="10" ry="4" stroke="url(#logoGrad2)" transform="rotate(-45 12 12)"/>
+                </svg>
+            </div>
+            <span class="logo-text">NexusChat</span>
+        </div>
+    </div>
+
+    <button class="new-chat-btn" id="newChatBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        New Chat
+    </button>
+
+    <div class="conversations-list" id="conversationsList">
+        <!-- Conversations rendered here by JS -->
+    </div>
+
+    <div class="sidebar-footer">
+        <button class="settings-btn" id="settingsBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+            </svg>
+            Settings
+        </button>
+    </div>
+</aside>
+
+<!-- Main Chat Area -->
+<main class="main" id="main">
+    <!-- Chat Header -->
+    <header class="chat-header" id="chatHeader">
+        <div class="chat-header-info">
+            <button class="btn-icon" id="sidebarToggleBtn" title="Toggle Sidebar">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+            </button>
+            <div class="chat-avatar" id="chatAvatar">🤖</div>
+            <div>
+                <h1 class="chat-title" id="chatTitle">New Chat</h1>
+                <span class="chat-personality" id="chatPersonality">Friendly Assistant</span>
+            </div>
+        </div>
+        <div class="chat-header-actions">
+            <button class="btn-icon" id="themeBtn" title="Change Theme">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41M12 7a5 5 0 100 10 5 5 0 000-10z"/></svg>
+            </button>
+            <button class="btn-icon" id="personalityBtn" title="Change personality">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </button>
+            <button class="btn-icon" id="renameChatBtn" title="Rename chat">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="btn-icon delete-btn" id="deleteChatBtn" title="Delete chat">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Messages Area -->
+    <div class="messages-area" id="messagesArea">
+        <!-- Welcome screen (shown when no messages) -->
+        <div class="welcome-screen" id="welcomeScreen">
+            <div class="welcome-icon">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+                    <defs>
+                        <linearGradient id="wlogoGrad" x1="0" y1="0" x2="24" y2="24">
+                            <stop stop-color="var(--accent-1)"/>
+                            <stop offset="1" stop-color="var(--accent-2)"/>
+                        </linearGradient>
+                        <linearGradient id="wlogoGrad2" x1="24" y1="0" x2="0" y2="24">
+                            <stop stop-color="var(--accent-2)"/>
+                            <stop offset="1" stop-color="var(--accent-3)"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="12" cy="12" r="3" fill="url(#wlogoGrad)"/>
+                    <ellipse cx="12" cy="12" rx="10" ry="4" stroke="url(#wlogoGrad)" transform="rotate(45 12 12)"/>
+                    <ellipse cx="12" cy="12" rx="10" ry="4" stroke="url(#wlogoGrad2)" transform="rotate(-45 12 12)"/>
+                </svg>
+            </div>
+            <h2>Welcome to NexusChat</h2>
+            <p>Your personal AI assistant. Start a conversation or choose a personality to customize the experience.</p>
+            <div class="welcome-suggestions" id="welcomeSuggestions">
+                <button class="suggestion-chip" data-prompt="Explain quantum computing in simple terms">✨ Explain quantum computing</button>
+                <button class="suggestion-chip" data-prompt="Write a creative short story about a time traveler">📝 Write a creative story</button>
+                <button class="suggestion-chip" data-prompt="Help me debug a JavaScript function">💻 Help me debug code</button>
+                <button class="suggestion-chip" data-prompt="What are some tips for productivity?">🚀 Productivity tips</button>
+            </div>
+        </div>
+        <!-- Messages rendered here by JS -->
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-area" id="inputArea">
+        <div class="input-wrapper">
+            <textarea id="messageInput" placeholder="Type your message..." rows="1" autocomplete="off"></textarea>
+            <button class="send-btn" id="sendBtn" title="Send message" disabled>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+            </button>
+        </div>
+        <span class="input-hint">Press Enter to send · Shift+Enter for new line</span>
+    </div>
+</main>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Settings</h2>
+            <button class="btn-icon modal-close" id="settingsCloseBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="settings-section">
+                <h3>API Configuration</h3>
+                <label class="settings-label" for="apiKeyInput">OpenRouter API Key</label>
+                <div class="api-key-wrapper">
+                    <input type="password" id="apiKeyInput" class="settings-input" placeholder="sk-or-v1-...">
+                    <button class="btn-icon toggle-visibility" id="toggleApiKey" title="Show/Hide API key">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                </div>
+                <p class="settings-hint">Your API key is stored locally and never sent to any server other than OpenRouter.</p>
+            </div>
+
+            <div class="settings-section">
+                <h3>Model</h3>
+                <select id="modelInput" class="settings-input">
+                    <option value="nvidia/nemotron-3-super-120b-a12b:free">Nemotron 120B (Powerful/Slow)</option>
+                    <option value="google/gemini-2.5-flash:free">Gemini 2.5 Flash (Super Fast ⚡⚡)</option>
+                    <option value="z-ai/glm-4.5-air:free">GLM 4.5 Air (Fast ⚡)</option>
+                    <option value="cognitivecomputations/dolphin-mistral-24b-venice-edition:free">Dolphin Mistral 24B (Creative/Uncensored)</option>
+                    <option value="stepfun/step-3.5-flash">Step-3.5-Flash (Not Recommended)</option>
+                </select>
+                <p class="settings-hint">Select Gemini 2.5 Flash for the absolute fastest response times on OpenRouter.</p>
+            </div>
+
+            <div class="settings-section">
+                <h3>Response Settings</h3>
+                <label class="settings-label" for="temperatureSlider">Temperature: <span id="temperatureValue">0.7</span></label>
+                <input type="range" id="temperatureSlider" class="settings-slider" min="0" max="2" step="0.1" value="0.7">
+                <p class="settings-hint">Lower = more focused, Higher = more creative</p>
+
+                <label class="settings-label" for="maxTokensInput">Max Tokens</label>
+                <input type="number" id="maxTokensInput" class="settings-input" value="2048" min="100" max="8192">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="settingsCancelBtn">Cancel</button>
+            <button class="btn btn-primary" id="settingsSaveBtn">Save Settings</button>
+        </div>
+    </div>
+</div>
+
+<!-- Personality Modal -->
+<div class="modal-overlay" id="personalityModal">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <h2>Choose Personality</h2>
+            <button class="btn-icon modal-close" id="personalityCloseBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="personality-grid" id="personalityGrid">
+                <!-- Preset personalities rendered by JS -->
+            </div>
+
+            <div class="custom-personality-section">
+                <h3>Create Custom Personality</h3>
+                <label class="settings-label" for="customPersonalityName">Name</label>
+                <input type="text" id="customPersonalityName" class="settings-input" placeholder="e.g., Chef Gordon">
+
+                <label class="settings-label" for="customPersonalityEmoji">Emoji Avatar</label>
+                <input type="text" id="customPersonalityEmoji" class="settings-input" placeholder="e.g., 👨‍🍳" maxlength="4">
+
+                <label class="settings-label" for="customPersonalityPrompt">System Prompt</label>
+                <textarea id="customPersonalityPrompt" class="settings-textarea" rows="4" placeholder="Describe how the bot should behave, its tone, areas of expertise, and any personality quirks..."></textarea>
+
+                <button class="btn btn-primary" id="saveCustomPersonality" style="margin-top:12px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    Add Personality
+                </button>
+            </div>
+
+            <div id="customPersonalitiesList" class="custom-personalities-list">
+                <!-- Custom personalities rendered here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rename Modal -->
+<div class="modal-overlay" id="renameModal">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <h2>Rename Chat</h2>
+            <button class="btn-icon modal-close" id="renameCloseBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <label class="settings-label" for="renameInput">Chat Title</label>
+            <input type="text" id="renameInput" class="settings-input" placeholder="Enter a new name...">
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="renameCancelBtn">Cancel</button>
+            <button class="btn btn-primary" id="renameSaveBtn">Rename</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="app.js?v=5"></script>
+</body>
+</html>

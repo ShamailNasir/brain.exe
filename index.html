@@ -17,6 +17,8 @@
     <div class="liquid-blob"></div>
     <div class="liquid-blob"></div>
     <div class="liquid-blob"></div>
+    <div class="liquid-blob"></div>
+    <div class="liquid-blob"></div>
 </div>
 
 <!-- Sidebar -->
@@ -71,16 +73,49 @@
             <button class="btn-icon" id="sidebarToggleBtn" title="Toggle Sidebar">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
             </button>
+
             <div class="chat-avatar" id="chatAvatar">🤖</div>
             <div>
                 <h1 class="chat-title" id="chatTitle">New Chat</h1>
                 <span class="chat-personality" id="chatPersonality">Friendly Assistant</span>
             </div>
         </div>
-        <div class="chat-header-actions">
-            <button class="btn-icon" id="themeBtn" title="Change Theme">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41M12 7a5 5 0 100 10 5 5 0 000-10z"/></svg>
-            </button>
+        <div class="chat-header-actions" style="position: relative;">
+            <div style="position: relative;">
+                <button class="btn-icon" id="themeBtn" title="Change Theme">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41M12 7a5 5 0 100 10 5 5 0 000-10z"/></svg>
+                </button>
+                <div id="themeDropdown" class="theme-dropdown">
+                    <div class="theme-dropdown-header">Select Theme</div>
+                    <div class="theme-list" id="themeList">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+            <div style="position: relative;">
+                <button class="btn-icon" id="displayBtn" title="Display Settings">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                </button>
+                <div id="displayDropdown" class="theme-dropdown display-dropdown">
+                    <div class="theme-dropdown-header">Display Settings</div>
+                    <div class="slider-group">
+                        <label for="fontSizeSlider">Font Size</label>
+                        <input type="range" id="fontSizeSlider" min="0.8" max="1.5" step="0.05" value="1">
+                    </div>
+                    <div class="slider-group">
+                        <label for="chatWidthSlider">Chat Width</label>
+                        <input type="range" id="chatWidthSlider" min="600" max="1800" step="50" value="1200">
+                    </div>
+                    <div class="slider-group">
+                        <label for="lineHeightSlider">Line Spacing</label>
+                        <input type="range" id="lineHeightSlider" min="1.4" max="2.4" step="0.05" value="1.85">
+                    </div>
+                    <div class="slider-group">
+                        <label for="blockSpacingSlider">Block Spacing</label>
+                        <input type="range" id="blockSpacingSlider" min="10" max="60" step="2" value="28">
+                    </div>
+                </div>
+            </div>
             <button class="btn-icon" id="personalityBtn" title="Change personality">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </button>
@@ -128,13 +163,15 @@
 
     <!-- Input Area -->
     <div class="input-area" id="inputArea">
-        <div class="input-wrapper">
-            <textarea id="messageInput" placeholder="Type your message..." rows="1" autocomplete="off"></textarea>
-            <button class="send-btn" id="sendBtn" title="Send message" disabled>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
-            </button>
+        <div class="input-container">
+            <div class="input-wrapper">
+                <textarea id="messageInput" placeholder="Type your message..." rows="1" autocomplete="off"></textarea>
+                <button class="send-btn" id="sendBtn" title="Send message" disabled>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+                </button>
+            </div>
+            <span class="input-hint">Press Enter to send · Shift+Enter for new line</span>
         </div>
-        <span class="input-hint">Press Enter to send · Shift+Enter for new line</span>
     </div>
 </main>
 
@@ -163,13 +200,29 @@
             <div class="settings-section">
                 <h3>Model</h3>
                 <select id="modelInput" class="settings-input">
-                    <option value="nvidia/nemotron-3-super-120b-a12b:free">Nemotron 120B (Powerful/Slow)</option>
-                    <option value="google/gemini-2.5-flash:free">Gemini 2.5 Flash (Super Fast ⚡⚡)</option>
-                    <option value="z-ai/glm-4.5-air:free">GLM 4.5 Air (Fast ⚡)</option>
-                    <option value="cognitivecomputations/dolphin-mistral-24b-venice-edition:free">Dolphin Mistral 24B (Creative/Uncensored)</option>
-                    <option value="stepfun/step-3.5-flash">Step-3.5-Flash (Not Recommended)</option>
+                    <optgroup label="⚡ FAST / DEFAULT">
+                        <option value="google/gemini-2.5-flash:free">Gemini 2.5 Flash — Super Fast ⚡⚡</option>
+                        <option value="stepfun/step-3.5-flash">Step 3.5 Flash — Lightning-fast responses</option>
+                        <option value="qwen/qwen3-4b:free">Qwen3 4B — Ultra-fast, minimal delay</option>
+                    </optgroup>
+                    <optgroup label="⚖️ BALANCED">
+                        <option value="nvidia/nemotron-3-nano-30b-a3b:free">Nemotron Nano 30B — Balanced speed & intelligence</option>
+                        <option value="mistralai/mistral-small-3.1-24b-instruct:free">Mistral Small 3.1 (24B) — Efficient & high-quality</option>
+                        <option value="z-ai/glm-4.5-air:free">GLM 4.5 Air — Fast & reliable</option>
+                    </optgroup>
+                    <optgroup label="🧠 SMART / HEAVY THINKING">
+                        <option value="openai/gpt-oss-120b:free">GPT-OSS 120B — Strong reasoning & detailed answers</option>
+                        <option value="nvidia/nemotron-3-super-120b-a12b:free">Nemotron 120B — Powerful deep thinking</option>
+                        <option value="qwen/qwen3-next-80b-a3b-instruct-2509:free">Qwen3 Next 80B — Complex tasks & long inputs</option>
+                        <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B — Reliable & well-rounded</option>
+                    </optgroup>
+                    <optgroup label="🧪 OPTIONAL / ADVANCED">
+                        <option value="minimax/minimax-m2.5">MiniMax M2.5 — Advanced reasoning & problem solving</option>
+                        <option value="qwen/qwen3-coder-480b-a35b-instruct">Qwen3 Coder 480B — Specialized for coding & dev</option>
+                        <option value="cognitivecomputations/dolphin-mistral-24b-venice-edition:free">Dolphin Mistral 24B — Creative & uncensored</option>
+                    </optgroup>
                 </select>
-                <p class="settings-hint">Select Gemini 2.5 Flash for the absolute fastest response times on OpenRouter.</p>
+                <p class="settings-hint">⚡ Fast models are great for everyday chat. 🧠 Smart models take longer but give deeper answers.</p>
             </div>
 
             <div class="settings-section">
@@ -247,9 +300,8 @@
     </div>
 </div>
 
-<!-- Toast Container -->
-<div class="toast-container" id="toastContainer"></div>
-
-<script src="app.js?v=5"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

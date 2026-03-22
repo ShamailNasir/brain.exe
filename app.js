@@ -6,7 +6,7 @@
 // ============================================================
 // Preset Personalities & Themes
 // ============================================================
-const THEMES = ['icy', 'midnight', 'emerald', 'sunset'];
+const THEMES = ['icy', 'midnight', 'emerald', 'sunset', 'cosmic', 'sleek', 'dynamic', 'corporate', 'minimal', 'energetic', 'modern', 'striking', 'elegant', 'vintage', 'chic', 'youthful', 'bloom', 'nature', 'citrus', 'rose', 'gold', 'eclectic', 'glamour', 'neon', 'alpine', 'soothing', 'viridian', 'oxford', 'grape', 'preppy', 'aurora', 'cyber', 'nebula', 'magma', 'abyss', 'plasma', 'twilight', 'auric', 'titanium', 'quantum', 'ember', 'glacier', 'venom', 'obsidian', 'mirage', 'cobalt', 'rust', 'arctic', 'onyx', 'tempest'];
 
 const PRESET_PERSONALITIES = [
     {
@@ -79,7 +79,11 @@ class AppState {
             model: 'google/gemini-2.5-flash:free',
             theme: 'icy',
             temperature: 0.7,
-            maxTokens: 2048
+            maxTokens: 2048,
+            fontSize: 1,
+            chatWidth: 1200,
+            lineHeight: 1.85,
+            blockSpacing: 28
         };
         this.customPersonalities = [];
         this.isGenerating = false;
@@ -171,8 +175,8 @@ class AppState {
 
     getPersonality(id) {
         return PRESET_PERSONALITIES.find(p => p.id === id) ||
-               this.customPersonalities.find(p => p.id === id) ||
-               PRESET_PERSONALITIES[0];
+            this.customPersonalities.find(p => p.id === id) ||
+            PRESET_PERSONALITIES[0];
     }
 
     addCustomPersonality(name, emoji, systemPrompt) {
@@ -196,69 +200,238 @@ class AppState {
 }
 
 // ============================================================
-// Markdown Parser (lightweight)
+// Markdown Parser (full-featured)
 // ============================================================
-function parseMarkdown(text) {
+function escapeHtmlChars(text) {
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function parseInline(text) {
     if (!text) return '';
     let html = text;
-
-    // Escape HTML (but keep intentional markdown)
-    html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-    // Code blocks (```...```)
-    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
-        return `<pre><code class="language-${lang}">${code.trim()}</code></pre>`;
-    });
-
-    // Inline code
+    // Inline code (must come first to prevent inner parsing)
     html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-
+    // Bold + Italic ***text***
+    html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
     // Bold **text** or __text__
     html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
-
     // Italic *text* or _text_
     html = html.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
     html = html.replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, '<em>$1</em>');
-
-    // Strikethrough
+    // Strikethrough ~~text~~
     html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
-
-    // Headers
-    html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
-    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-    html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-    html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
-
-    // Blockquotes
-    html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
-
-    // Horizontal rules
-    html = html.replace(/^---$/gm, '<hr>');
-
-    // Unordered lists
-    html = html.replace(/^[\s]*[-*] (.+)$/gm, '<li>$1</li>');
-    html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-
-    // Ordered lists
-    html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
-
-    // Links
+    // Links [text](url)
     html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    return html;
+}
 
-    // Paragraphs — wrap remaining text blocks
-    html = html.replace(/\n\n/g, '</p><p>');
-    // Wrap in paragraph if not starting with a block element
-    if (!html.match(/^<(h[1-4]|ul|ol|pre|blockquote|hr)/)) {
-        html = '<p>' + html + '</p>';
+function parseMarkdown(text) {
+    if (!text) return '';
+
+    // Normalize line endings
+    text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+    // --- Extract code blocks first (protect from other parsing) ---
+    const codeBlocks = [];
+    text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+        const idx = codeBlocks.length;
+        const langLabel = lang || '';
+        const escapedCode = escapeHtmlChars(code.trimEnd());
+        codeBlocks.push(
+            `<div class="code-block-wrapper">` +
+            (langLabel ? `<div class="code-block-header"><span class="code-lang">${langLabel}</span></div>` : '') +
+            `<pre><code class="language-${langLabel}">${escapedCode}</code></pre></div>`
+        );
+        return `\n%%CODEBLOCK_${idx}%%\n`;
+    });
+
+    // --- Extract tables before block splitting ---
+    // Detect contiguous lines containing pipes with a separator row
+    const tableBlocks = [];
+    const extractedLines = text.split('\n');
+    const resultLines = [];
+    let i = 0;
+    while (i < extractedLines.length) {
+        const line = extractedLines[i];
+        // Check if this line looks like a table header (contains |)
+        if (line.includes('|') && i + 1 < extractedLines.length) {
+            // Check if next line is a separator
+            const nextLine = extractedLines[i + 1];
+            if (/^\s*\|?[\s\-:]+\|[\s\-:|]*$/.test(nextLine) && nextLine.includes('-')) {
+                // Found a table! Collect all contiguous table rows
+                const tableLines = [line, nextLine];
+                let j = i + 2;
+                while (j < extractedLines.length && extractedLines[j].includes('|') && extractedLines[j].trim() !== '') {
+                    tableLines.push(extractedLines[j]);
+                    j++;
+                }
+                const idx = tableBlocks.length;
+                tableBlocks.push(buildTableHtml(tableLines));
+                resultLines.push(`%%TABLE_${idx}%%`);
+                i = j;
+                continue;
+            }
+        }
+        resultLines.push(line);
+        i++;
     }
-    // Line breaks within paragraphs
-    html = html.replace(/\n/g, '<br>');
+    text = resultLines.join('\n');
 
-    // Clean up empty paragraphs
-    html = html.replace(/<p>\s*<\/p>/g, '');
-    html = html.replace(/<p><br>/g, '<p>');
+    // Split into blocks by double newline
+    const blocks = text.split(/\n{2,}/);
+    const outputParts = [];
 
+    for (let block of blocks) {
+        block = block.trim();
+        if (!block) continue;
+
+        // --- Code block placeholder ---
+        const codeMatch = block.match(/^%%CODEBLOCK_(\d+)%%$/);
+        if (codeMatch) {
+            outputParts.push(codeBlocks[parseInt(codeMatch[1])]);
+            continue;
+        }
+
+        // --- Table placeholder ---
+        const tableMatch = block.match(/^%%TABLE_(\d+)%%$/);
+        if (tableMatch) {
+            outputParts.push(tableBlocks[parseInt(tableMatch[1])]);
+            continue;
+        }
+
+        const lines = block.split('\n');
+
+        // --- Heading (single line) ---
+        const headingMatch = block.match(/^(#{1,4})\s*(.+)$/);
+        if (headingMatch) {
+            const level = headingMatch[1].length;
+            outputParts.push(`<h${level}>${parseInline(escapeHtmlChars(headingMatch[2]))}</h${level}>`);
+            continue;
+        }
+
+        // --- Horizontal rule ---
+        if (/^[-*_]{3,}$/.test(block)) {
+            outputParts.push('<hr>');
+            continue;
+        }
+
+        // --- Blockquote ---
+        if (/^>/.test(block)) {
+            const bqContent = block.split('\n')
+                .map(line => line.replace(/^>\s?/, ''))
+                .join('\n');
+            outputParts.push(`<blockquote>${parseInline(escapeHtmlChars(bqContent)).replace(/\n/g, '<br>')}</blockquote>`);
+            continue;
+        }
+
+        // --- Pure unordered list ---
+        if (/^[\s]*[-*]\s/.test(lines[0]) && lines.every(l => !l.trim() || /^[\s]*[-*]\s/.test(l))) {
+            let listHtml = '<ul>';
+            for (const line of lines) {
+                const match = line.match(/^[\s]*[-*]\s+(.+)/);
+                if (match) listHtml += `<li>${parseInline(escapeHtmlChars(match[1]))}</li>`;
+            }
+            listHtml += '</ul>';
+            outputParts.push(listHtml);
+            continue;
+        }
+
+        // --- Pure ordered list ---
+        if (/^\s*\d+\.\s/.test(lines[0]) && lines.every(l => !l.trim() || /^\s*\d+\.\s/.test(l))) {
+            let listHtml = '<ol>';
+            for (const line of lines) {
+                const match = line.match(/^\s*\d+\.\s+(.+)/);
+                if (match) listHtml += `<li>${parseInline(escapeHtmlChars(match[1]))}</li>`;
+            }
+            listHtml += '</ol>';
+            outputParts.push(listHtml);
+            continue;
+        }
+
+        // --- Mixed content: headings, lists, tables, text interleaved ---
+        let hasMixedTypes = false;
+        for (const line of lines) {
+            if (/^#{1,4}\s*/.test(line) || /^\s*[-*]\s/.test(line) || /^\s*\d+\.\s/.test(line) || /^%%TABLE_\d+%%$/.test(line)) {
+                hasMixedTypes = true; break;
+            }
+        }
+
+        if (hasMixedTypes) {
+            let currentList = null;
+            let listHtml = '';
+            const flushList = () => {
+                if (currentList) {
+                    outputParts.push(`<${currentList}>${listHtml}</${currentList}>`);
+                    currentList = null;
+                    listHtml = '';
+                }
+            };
+            for (const line of lines) {
+                // Table placeholder inside mixed block
+                const tblMatch = line.match(/^%%TABLE_(\d+)%%$/);
+                if (tblMatch) {
+                    flushList();
+                    outputParts.push(tableBlocks[parseInt(tblMatch[1])]);
+                    continue;
+                }
+                const hMatch = line.match(/^(#{1,4})\s*(.+)$/);
+                const ulMatch = line.match(/^\s*[-*]\s+(.+)/);
+                const olMatch = line.match(/^\s*\d+\.\s+(.+)/);
+                if (hMatch) {
+                    flushList();
+                    const level = hMatch[1].length;
+                    outputParts.push(`<h${level}>${parseInline(escapeHtmlChars(hMatch[2]))}</h${level}>`);
+                } else if (ulMatch) {
+                    if (currentList !== 'ul') { flushList(); currentList = 'ul'; }
+                    listHtml += `<li>${parseInline(escapeHtmlChars(ulMatch[1]))}</li>`;
+                } else if (olMatch) {
+                    if (currentList !== 'ol') { flushList(); currentList = 'ol'; }
+                    listHtml += `<li>${parseInline(escapeHtmlChars(olMatch[1]))}</li>`;
+                } else if (line.trim()) {
+                    flushList();
+                    outputParts.push(`<p>${parseInline(escapeHtmlChars(line))}</p>`);
+                }
+            }
+            flushList();
+            continue;
+        }
+
+        // --- Paragraph (default) ---
+        const escaped = escapeHtmlChars(block);
+        const paraHtml = parseInline(escaped).replace(/\n/g, '<br>');
+        outputParts.push(`<p>${paraHtml}</p>`);
+    }
+
+    return outputParts.join('\n');
+}
+
+// Helper: Build HTML table from raw markdown table lines
+function buildTableHtml(tableLines) {
+    const parseRow = (row) => row.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+    const headers = parseRow(tableLines[0]);
+    const aligns = parseRow(tableLines[1]).map(sep => {
+        if (/^:-+:$/.test(sep)) return 'center';
+        if (/^-+:$/.test(sep)) return 'right';
+        return 'left';
+    });
+    let html = '<div class="table-wrapper"><table><thead><tr>';
+    headers.forEach((h, i) => {
+        const escapedHeader = escapeHtmlChars(h).replace(/(?:&lt;br\s*\/?&gt;\s*)+/gi, '<br>');
+        html += `<th style="text-align:${aligns[i] || 'left'}">${parseInline(escapedHeader)}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+    for (let r = 2; r < tableLines.length; r++) {
+        if (!tableLines[r].trim()) continue;
+        const cells = parseRow(tableLines[r]);
+        html += '<tr>';
+        cells.forEach((c, i) => {
+            const escapedCell = escapeHtmlChars(c).replace(/(?:&lt;br\s*\/?&gt;\s*)+/gi, '<br>');
+            html += `<td style="text-align:${aligns[i] || 'left'}">${parseInline(escapedCell)}</td>`;
+        });
+        html += '</tr>';
+    }
+    html += '</tbody></table></div>';
     return html;
 }
 
@@ -298,6 +471,7 @@ class UIController {
             'chatTitle', 'chatPersonality', 'personalityBtn', 'renameChatBtn',
             'deleteChatBtn', 'messagesArea', 'welcomeScreen', 'welcomeSuggestions',
             'messageInput', 'sendBtn', 'inputArea',
+            'displayBtn', 'displayDropdown', 'fontSizeSlider', 'chatWidthSlider', 'lineHeightSlider', 'blockSpacingSlider',
             // Settings modal
             'settingsModal', 'settingsCloseBtn', 'apiKeyInput', 'toggleApiKey',
             'modelInput', 'temperatureSlider', 'temperatureValue', 'maxTokensInput',
@@ -333,14 +507,97 @@ class UIController {
             }
         });
 
-        // Theme Toggle
-        elements.themeBtn.addEventListener('click', () => {
-            const currentIdx = THEMES.indexOf(this.state.settings.theme || 'icy');
-            const nextIdx = (currentIdx + 1) % THEMES.length;
-            this.state.settings.theme = THEMES[nextIdx];
-            this.state.save();
-            this.applyTheme();
+        // Theme Dropdown Toggle
+        elements.themeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const dropdown = document.getElementById('themeDropdown');
+            dropdown.classList.toggle('show');
+            if (elements.displayDropdown) elements.displayDropdown.classList.remove('show');
         });
+
+        // Display Dropdown Toggle
+        if (elements.displayBtn) {
+            elements.displayBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                elements.displayDropdown.classList.toggle('show');
+                const themeDropdown = document.getElementById('themeDropdown');
+                if (themeDropdown) themeDropdown.classList.remove('show');
+            });
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const themeDropdown = document.getElementById('themeDropdown');
+            if (themeDropdown && !themeDropdown.contains(e.target) && !elements.themeBtn.contains(e.target)) {
+                themeDropdown.classList.remove('show');
+            }
+            if (elements.displayDropdown && !elements.displayDropdown.contains(e.target) && elements.displayBtn && !elements.displayBtn.contains(e.target)) {
+                elements.displayDropdown.classList.remove('show');
+            }
+        });
+
+        // Display Settings Sliders
+        const setupSlider = (id, settingKey, cssVar, suffix = '') => {
+            const slider = elements[id];
+            if (!slider) return;
+            // Handle loading defaults for older saved states
+            if (state.settings[settingKey] === undefined) {
+                const defaults = { fontSize: 1, chatWidth: 1200, lineHeight: 1.85, blockSpacing: 28 };
+                state.settings[settingKey] = defaults[settingKey];
+            }
+            slider.value = state.settings[settingKey];
+            slider.addEventListener('input', (e) => {
+                const val = e.target.value;
+                state.settings[settingKey] = parseFloat(val);
+                document.documentElement.style.setProperty(cssVar, val + suffix);
+                state.save();
+            });
+        };
+
+        setupSlider('fontSizeSlider', 'fontSize', '--chat-font-size', 'rem');
+        setupSlider('chatWidthSlider', 'chatWidth', '--chat-max-width', 'px');
+        setupSlider('lineHeightSlider', 'lineHeight', '--chat-line-height');
+        setupSlider('blockSpacingSlider', 'blockSpacing', '--chat-block-spacing', 'px');
+
+        // Initialize Theme Dropdown List
+        const initThemeDropdown = () => {
+            const themeList = document.getElementById('themeList');
+            if (!themeList) return;
+            themeList.innerHTML = '';
+            THEMES.forEach(theme => {
+                const item = document.createElement('div');
+                item.className = 'theme-item';
+                if (this.state.settings.theme === theme) item.classList.add('active');
+
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = theme;
+
+                const colorDot = document.createElement('div');
+                colorDot.className = 'theme-item-color';
+                // We'll trust the CSS variables to style the dot via inherit or direct style
+                // but since variables are on :root based on [data-theme], 
+                // we can't easily preview the exact color unless we hardcode. 
+                // Alternatively, we leave the dot empty and let the active state handle it.
+
+                item.appendChild(nameSpan);
+                item.appendChild(colorDot);
+
+                item.addEventListener('click', () => {
+                    this.state.settings.theme = theme;
+                    this.state.save();
+                    this.applyTheme();
+
+                    // Update active class
+                    themeList.querySelectorAll('.theme-item').forEach(el => el.classList.remove('active'));
+                    item.classList.add('active');
+
+                    // The dropdown now remains open so users can quickly preview multiple themes.
+                    // It will only close upon clicking outside or clicking the theme button again.
+                });
+                themeList.appendChild(item);
+            });
+        };
+        initThemeDropdown();
 
         // Close sidebar on mobile when clicking outside
         elements.main.addEventListener('click', () => {
@@ -358,7 +615,7 @@ class UIController {
             const input = elements.apiKeyInput;
             input.type = input.type === 'password' ? 'text' : 'password';
         });
-        
+
         // Auto-save settings when changed so they never get lost
         elements.apiKeyInput.addEventListener('input', (e) => {
             this.state.settings.apiKey = e.target.value.trim();
@@ -370,7 +627,7 @@ class UIController {
             if (oldModel !== newModel) {
                 this.state.settings.model = newModel;
                 this.state.save();
-                
+
                 const conv = this.state.getActiveConversation();
                 if (conv && conv.messages.length > 0) {
                     conv.messages.push({
@@ -456,6 +713,17 @@ class UIController {
 
     applyTheme() {
         document.body.setAttribute('data-theme', this.state.settings.theme || 'icy');
+
+        // Ensure new settings have defaults if missing from saved state
+        const fontSize = this.state.settings.fontSize || 1;
+        const chatWidth = this.state.settings.chatWidth || 1200;
+        const lineHeight = this.state.settings.lineHeight || 1.85;
+        const blockSpacing = this.state.settings.blockSpacing || 28;
+
+        document.documentElement.style.setProperty('--chat-font-size', fontSize + 'rem');
+        document.documentElement.style.setProperty('--chat-max-width', chatWidth + 'px');
+        document.documentElement.style.setProperty('--chat-line-height', lineHeight);
+        document.documentElement.style.setProperty('--chat-block-spacing', blockSpacing + 'px');
     }
 
     render() {
@@ -561,23 +829,35 @@ class UIController {
         const personality = this.state.getPersonality(conv.personalityId);
         const messagesHtml = conv.messages.map(msg => {
             if (msg.role === 'system_notification') {
-                return `<div class="message system-msg"><div class="system-text">${this.escapeHtml(msg.content)}</div></div>`;
+                return `<div class="msg-turn system-msg"><div class="system-text">${this.escapeHtml(msg.content)}</div></div>`;
             }
             const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const isUser = msg.role === 'user';
             const isError = msg.role === 'error';
-            const avatarContent = isUser ? '' : personality.emoji;
             const roleClass = isError ? 'assistant' : msg.role;
 
-            return `
-                <div class="message ${roleClass}">
-                    <div class="message-avatar">${avatarContent}</div>
-                    <div>
-                        <div class="message-content ${isError ? 'message-error' : ''}">${parseMarkdown(msg.content)}</div>
-                        <div class="message-time">${time}</div>
+            if (isUser) {
+                return `
+                    <div class="msg-turn msg-user">
+                        <div class="msg-header">
+                            <span class="msg-sender">You</span>
+                            <span class="msg-time">${time}</span>
+                        </div>
+                        <div class="msg-body">${parseMarkdown(msg.content)}</div>
                     </div>
-                </div>
-            `;
+                `;
+            } else {
+                return `
+                    <div class="msg-turn msg-assistant ${isError ? 'msg-error' : ''}">
+                        <div class="msg-header">
+                            <span class="msg-avatar-inline">${personality.emoji}</span>
+                            <span class="msg-sender">${personality.name}</span>
+                            <span class="msg-time">${time}</span>
+                        </div>
+                        <div class="msg-body">${parseMarkdown(msg.content)}</div>
+                    </div>
+                `;
+            }
         }).join('');
 
         // Preserve welcome screen element but hide it
@@ -593,12 +873,17 @@ class UIController {
         const personality = conv ? this.state.getPersonality(conv.personalityId) : PRESET_PERSONALITIES[0];
 
         const indicator = document.createElement('div');
-        indicator.className = 'typing-indicator';
+        indicator.className = 'msg-turn msg-assistant typing-indicator';
         indicator.id = 'typingIndicator';
         indicator.innerHTML = `
-            <div class="message-avatar" style="background:var(--bg-surface);border:1px solid var(--border);">${personality.emoji}</div>
-            <div class="typing-dots">
-                <span></span><span></span><span></span>
+            <div class="msg-header">
+                <span class="msg-avatar-inline">${personality.emoji}</span>
+                <span class="msg-sender">${personality.name}</span>
+            </div>
+            <div class="msg-body">
+                <div class="typing-dots">
+                    <span></span><span></span><span></span>
+                </div>
             </div>
         `;
         this.elements.messagesArea.appendChild(indicator);
@@ -665,7 +950,7 @@ class UIController {
         this.showTypingIndicator();
 
         const personality = this.state.getPersonality(conv.personalityId);
-        const systemPrompt = personality.systemPrompt + '\n\nIMPORTANT: You must always respond in English, regardless of the language the user uses. Format your responses beautifully using Markdown. Use clear headings (##), bullet points, bold text, and code blocks to structure your answers logically. Never output giant walls of unstructured text.';
+        const systemPrompt = personality.systemPrompt + '\n\nIMPORTANT: You must always respond in English, regardless of the language the user uses. Format your responses beautifully using Markdown. Use clear headings (##), bullet points, bold text, and code blocks to structure your answers logically. Never output giant walls of unstructured text. Pay extremely close attention to spacing—always ensure there is a clear space between markdown tags (like **bold** or # headings) and the surrounding text to maintain legibility. Never let words run together.';
         const messages = [
             { role: 'system', content: systemPrompt },
             ...conv.messages
@@ -696,12 +981,12 @@ class UIController {
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 console.error("OpenRouter API Error Data:", errorData);
-                
+
                 let errorMsg = `HTTP ${response.status}: ${response.statusText}`;
                 if (errorData?.error?.message) {
                     errorMsg = errorData.error.message;
                 }
-                
+
                 throw new Error(errorMsg);
             }
 

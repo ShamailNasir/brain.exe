@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=Sora:wght@600;700;800&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&amp;family=Instrument+Serif:ital@0;1&amp;family=Hanken+Grotesk:wght@300;400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E9ECF0; --bg2:#DFE4EA; --surf:rgba(255,255,255,0.55); --surf2:rgba(255,255,255,0.85); --card:#F6F8FB;
+  --line:rgba(14,18,24,0.10); --line2:rgba(14,18,24,0.18);
+  --ink:#0E1218; --ink2:rgba(14,18,24,0.62); --ink3:rgba(14,18,24,0.40);
+  --accent:#1E2BD4; --accent2:rgba(30,43,212,0.10);
+  --b1:#9DB0FF; --b2:#C6B8FF; --b3:#9BD8D9; --blobOp:0.55;
+  --display:'Syne',sans-serif; --body:'Hanken Grotesk',sans-serif; --serif:'Newsreader',serif; --mono:'JetBrains Mono',monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;overflow:hidden;transition:background .7s var(--ease),color .7s var(--ease);}
+::selection{background:var(--accent);color:#fff;}
+::-webkit-scrollbar{width:9px;}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:9px;border:2px solid transparent;background-clip:padding-box;}
+::-webkit-scrollbar-track{background:transparent;}
+@keyframes driftA{0%{transform:translate(0,0) scale(1);}50%{transform:translate(8%,6%) scale(1.14);}100%{transform:translate(0,0) scale(1);}}
+@keyframes driftB{0%{transform:translate(0,0) scale(1);}50%{transform:translate(-7%,5%) scale(1.1);}100%{transform:translate(0,0) scale(1);}}
+@keyframes driftC{0%{transform:translate(0,0) scale(1);}50%{transform:translate(5%,-7%) scale(1.16);}100%{transform:translate(0,0) scale(1);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes viewIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+@keyframes spinSlow{to{transform:rotate(360deg);}}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+@keyframes checkPop{0%{transform:scale(.4);opacity:0;}60%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
+@keyframes scan{0%{transform:translateY(-100%);}100%{transform:translateY(900%);}}
+.bgblob{position:absolute;border-radius:50%;filter:blur(58px);will-change:transform;}
+</style>
+</helmet>
+
+<div ref="{{ rootRef }}" style="position:relative;display:flex;height:100vh;width:100%;background:var(--bg);overflow:hidden;transition:background .7s var(--ease);">
+
+  <!-- ambient drifting background -->
+  <div ref="{{ bgRef }}" style="position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;opacity:var(--blobOp);transition:opacity .6s var(--ease);">
+    <div class="bgblob" style="top:-12%;left:6%;width:42vw;height:42vw;background:radial-gradient(circle at center,var(--b1),transparent 66%);animation:driftA 26s ease-in-out infinite;"></div>
+    <div class="bgblob" style="bottom:-16%;right:4%;width:40vw;height:40vw;background:radial-gradient(circle at center,var(--b2),transparent 66%);animation:driftB 32s ease-in-out infinite;"></div>
+    <div class="bgblob" style="top:30%;right:26%;width:30vw;height:30vw;background:radial-gradient(circle at center,var(--b3),transparent 68%);animation:driftC 38s ease-in-out infinite;"></div>
+  </div>
+  <div style="position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.04;mix-blend-mode:overlay;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E&quot;);"></div>
+
+  <!-- ===== LEFT NAV ===== -->
+  <aside style="position:relative;z-index:3;width:var(--navW,248px);flex-shrink:0;height:100%;display:flex;flex-direction:column;padding:26px 18px 20px;border-right:1px solid var(--line);background:var(--surf);backdrop-filter:blur(14px);transition:width .4s var(--ease);">
+    <a href="Brain.exe.dc.html" style="display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink);padding:2px 10px 26px;">
+      <span style="width:30px;height:30px;flex-shrink:0;border-radius:9px;background:linear-gradient(140deg,var(--accent),var(--b1));display:flex;align-items:center;justify-content:center;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a4 4 0 0 0-4 4 3 3 0 0 0-1 5.8V16a3 3 0 0 0 5 2.2A3 3 0 0 0 17 16v-2.2A3 3 0 0 0 16 8a4 4 0 0 0-4-4Z"></path><path d="M12 8v10"></path></svg>
+      </span>
+      <sc-if value="{{ showNavText }}" hint-placeholder-val="{{ true }}"><span style="font-family:var(--display);font-weight:800;font-size:18px;letter-spacing:-0.02em;white-space:nowrap;">brain<span style="color:var(--accent);">.exe</span></span>
+    </sc-if></a>
+
+    <sc-if value="{{ showNavText }}" hint-placeholder-val="{{ true }}"><div style="font-family:var(--mono);font-size:9.5px;letter-spacing:0.18em;color:var(--ink3);padding:0 12px 10px;">WORKSPACE</div></sc-if>
+    <nav style="display:flex;flex-direction:column;gap:3px;">
+      <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="6">
+        <button onClick="{{ n.onClick }}" style="{{ n.style }}" style-hover="background:var(--surf2);color:var(--ink);" title="{{ n.label }}">
+          <span style="display:flex;flex-shrink:0;color:{{ n.iconColor }};" innerHTML="{{ n.icon }}"></span>
+          <sc-if value="{{ showNavText }}" hint-placeholder-val="{{ true }}"><span style="flex:1;text-align:left;white-space:nowrap;">{{ n.label }}</span></sc-if>
+          <sc-if value="{{ n.showBadge }}" hint-placeholder-val="{{ false }}"><span style="font-family:var(--mono);font-size:10px;font-weight:500;color:var(--accent);background:var(--accent2);padding:2px 7px;border-radius:6px;">{{ n.badge }}</span></sc-if>
+        </button>
+      </sc-for>
+    </nav>
+
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:14px;">
+      <sc-if value="{{ showNavText }}" hint-placeholder-val="{{ true }}"><div style="padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--surf);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;"><span style="font-family:var(--mono);font-size:9px;letter-spacing:0.14em;color:var(--ink3);">TODAY</span><span style="font-family:var(--mono);font-size:11px;color:var(--accent);">{{ pct }}%</span></div>
+        <div style="height:5px;border-radius:5px;background:var(--line);overflow:hidden;"><div style="height:100%;border-radius:5px;width:{{ pct }}%;background:var(--accent);transition:width .5s var(--ease);"></div></div>
+      </div></sc-if>
+      <div style="display:flex;align-items:center;gap:11px;padding:4px 8px;">
+        <div style="width:32px;height:32px;flex-shrink:0;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--b1));display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--display);font-weight:700;font-size:12px;">S</div>
+        <sc-if value="{{ showNavText }}" hint-placeholder-val="{{ true }}"><div style="line-height:1.15;"><div style="font-size:13px;font-weight:600;">Shamail Nasir</div><div style="font-family:var(--mono);font-size:10px;color:var(--ink3);">focused mode</div></div></sc-if>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main ref="{{ mainRef }}" style="position:relative;z-index:2;flex:1;min-width:0;height:100%;overflow-y:auto;overflow-x:hidden;">
+    <div ref="{{ viewRef }}" style="max-width:var(--contentW,1000px);margin:0 auto;padding:34px 40px 80px;transition:max-width .4s var(--ease);">
+
+      <!-- TODAY -->
+      <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+      <section data-screen-label="Today" style="">
+        <header data-reveal="" style="margin-bottom:26px;">
+          <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.18em;color:var(--accent);margin-bottom:10px;">{{ dateLong }}</div>
+          <h1 style="font-family:var(--display);font-weight:700;font-size:clamp(30px,4vw,44px);letter-spacing:-0.03em;margin:0;line-height:1.0;">{{ greeting }}, Shamail.</h1>
+          <p style="margin:12px 0 0;color:var(--ink2);font-size:15px;max-width:48ch;">{{ openCount }} tasks waiting, {{ focusToday }} of focus logged. Here's where to begin.</p>
+        </header>
+
+        <!-- weekly view -->
+        <div data-reveal="" style="border:1px solid var(--line);background:var(--card);border-radius:20px;padding:20px 20px 18px;margin-bottom:24px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div style="display:flex;flex-direction:column;gap:3px;"><span style="font-family:var(--display);font-weight:600;font-size:16px;line-height:1;">This week</span><span style="font-family:var(--mono);font-size:10px;letter-spacing:0.08em;color:var(--ink3);">{{ selDayLong }}</span></div>
+            <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.06em;color:var(--ink2);background:var(--surf);border:1px solid var(--line);padding:5px 11px;border-radius:20px;white-space:nowrap;">{{ weekTotal }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
+            <sc-for list="{{ week }}" as="d" hint-placeholder-count="7">
+              <button onClick="{{ d.onClick }}" style="{{ d.style }}" style-hover="background:var(--surf2);">
+                <span style="font-family:var(--mono);font-size:9px;letter-spacing:0.14em;{{ d.wdStyle }}">{{ d.wd }}</span>
+                <span style="font-family:var(--display);font-weight:700;font-size:18px;line-height:1;{{ d.nStyle }}">{{ d.n }}</span>
+                <span style="display:flex;align-items:center;gap:3px;height:6px;">
+                  <sc-for list="{{ d.pips }}" as="p" hint-placeholder-count="0"><span style="{{ p }}"></span></sc-for>
+                </span>
+              </button>
+            </sc-for>
+          </div>
+          <div style="height:1px;background:var(--line);margin:16px 0 14px;"></div>
+          <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.16em;color:var(--ink3);margin-bottom:11px;">SCHEDULE</div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <sc-for list="{{ agenda }}" as="a" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:14px;padding:8px 4px;border-radius:9px;transition:background .15s;" style-hover="background:var(--surf2);">
+                <span style="font-family:var(--mono);font-size:11px;color:var(--ink3);width:46px;flex-shrink:0;">{{ a.time }}</span>
+                <span style="width:6px;height:6px;border-radius:50%;flex-shrink:0;background:{{ a.dot }};"></span>
+                <span style="flex:1;font-size:13.5px;color:var(--ink);">{{ a.title }}</span>
+                <span style="font-family:var(--mono);font-size:10px;color:var(--ink3);">{{ a.dur }}</span>
+              </div>
+            </sc-for>
+            <sc-if value="{{ agendaEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:10px 4px;font-size:13px;color:var(--ink3);font-family:var(--serif);font-style:italic;">Open space — nothing scheduled. A good day to think.</div></sc-if>
+          </div>
+        </div>
+
+        <!-- prime directive -->
+        <div data-reveal="" style="position:relative;overflow:hidden;border-radius:18px;padding:24px 26px;margin-bottom:24px;border:1px solid var(--line2);background:linear-gradient(115deg,var(--accent2),transparent 72%),var(--card);">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--accent);"></span><span style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;color:var(--accent);">THE DIRECTIVE · AI</span></div>
+          <h2 style="font-family:var(--display);font-weight:600;font-size:21px;letter-spacing:-0.02em;margin:0 0 7px;max-width:36ch;line-height:1.25;">{{ directive.title }}</h2>
+          <p style="margin:0 0 18px;color:var(--ink2);font-size:14px;max-width:52ch;">{{ directive.why }}</p>
+          <button onClick="{{ goInsights }}" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--body);font-weight:600;font-size:13.5px;color:#fff;background:var(--accent);border:none;border-radius:10px;padding:11px 18px;cursor:pointer;transition:transform .15s var(--ease);" style-hover="transform:translateY(-1px);">Start this →</button>
+        </div>
+
+        <!-- queue + practices -->
+        <div style="display:grid;grid-template-columns:1.55fr 1fr;gap:20px;align-items:start;">
+          <div data-reveal="">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;"><h3 style="font-family:var(--display);font-weight:600;font-size:16px;margin:0;">Priority queue</h3><span style="font-family:var(--mono);font-size:11px;color:var(--ink3);">{{ doneCount }}/{{ totalCount }} complete</span></div>
+            <div style="display:flex;flex-direction:column;gap:9px;">
+              <sc-for list="{{ todayTasks }}" as="t" hint-placeholder-count="5">
+                <div style="{{ t.rowStyle }}">
+                  <button onClick="{{ t.toggle }}" style="{{ t.boxStyle }}" style-hover="border-color:var(--accent);"><sc-if value="{{ t.done }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="animation:checkPop .3s var(--ease) both;"><path d="m4 12 5 5L20 6"></path></svg></sc-if></button>
+                  <div style="flex:1;min-width:0;"><div style="{{ t.titleStyle }}">{{ t.title }}</div><div style="display:flex;align-items:center;gap:9px;margin-top:4px;"><span style="font-family:var(--mono);font-size:10.5px;color:var(--ink3);">{{ t.time }}</span><span style="width:3px;height:3px;border-radius:50%;background:var(--ink3);"></span><span style="font-size:11px;color:var(--ink2);">{{ t.cat }}</span></div></div>
+                  <span style="{{ t.priStyle }}">{{ t.pri }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div data-reveal="">
+            <h3 style="font-family:var(--display);font-weight:600;font-size:16px;margin:0 0 13px;">Daily practices</h3>
+            <div style="border:1px solid var(--line);background:var(--card);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:3px;">
+              <sc-for list="{{ rituals }}" as="r" hint-placeholder-count="5">
+                <button onClick="{{ r.toggle }}" style="display:flex;align-items:center;gap:12px;padding:11px 9px;border-radius:10px;border:none;background:transparent;cursor:pointer;width:100%;text-align:left;transition:background .15s;" style-hover="background:var(--surf2);">
+                  <span style="{{ r.dotStyle }}"><sc-if value="{{ r.done }}" hint-placeholder-val="{{ false }}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"></path></svg></sc-if></span>
+                  <span style="{{ r.labelStyle }}">{{ r.label }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </section>
+      </sc-if>
+
+      <!-- TASKS -->
+      <sc-if value="{{ isTasks }}" hint-placeholder-val="{{ false }}">
+      <section data-screen-label="Task Workspace" style="">
+        <header data-reveal="" style="margin-bottom:22px;"><div style="font-family:var(--mono);font-size:11px;letter-spacing:0.18em;color:var(--accent);margin-bottom:9px;">EXECUTION</div><h1 style="font-family:var(--display);font-weight:700;font-size:clamp(28px,3.6vw,38px);letter-spacing:-0.03em;margin:0;">Task Workspace</h1></header>
+        <div data-reveal="" style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;">
+          <sc-for list="{{ filters }}" as="f" hint-placeholder-count="5"><button onClick="{{ f.onClick }}" style="{{ f.style }}" style-hover="border-color:var(--line2);color:var(--ink);">{{ f.label }}<span style="opacity:.6;margin-left:7px;font-family:var(--mono);font-size:11px;">{{ f.count }}</span></button></sc-for>
+        </div>
+        <div data-reveal="" style="display:flex;align-items:center;gap:12px;padding:13px 16px;border:1px dashed var(--line2);border-radius:12px;margin-bottom:16px;background:var(--surf);">
+          <span style="font-size:17px;color:var(--ink3);line-height:0;">+</span>
+          <input value="{{ draft }}" onInput="{{ onDraft }}" onKeyDown="{{ onDraftKey }}" placeholder="Add a task and press Enter…" style="flex:1;background:transparent;border:none;outline:none;font-family:var(--body);font-size:14px;color:var(--ink);">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <sc-for list="{{ filteredTasks }}" as="t" hint-placeholder-count="5">
+            <div style="{{ t.rowStyle }}">
+              <button onClick="{{ t.toggle }}" style="{{ t.boxStyle }}" style-hover="border-color:var(--accent);"><sc-if value="{{ t.done }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="animation:checkPop .3s var(--ease) both;"><path d="m4 12 5 5L20 6"></path></svg></sc-if></button>
+              <span style="{{ t.barStyle }}"></span>
+              <div style="flex:1;min-width:0;"><div style="{{ t.titleStyle }}">{{ t.title }}</div><div style="display:flex;align-items:center;gap:9px;margin-top:4px;"><span style="font-family:var(--mono);font-size:10.5px;color:var(--ink3);">{{ t.time }}</span><span style="font-size:11px;color:var(--ink2);">{{ t.cat }}</span></div></div>
+              <span style="{{ t.priStyle }}">{{ t.pri }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+      </sc-if>
+
+      <!-- CALENDAR -->
+      <sc-if value="{{ isCal }}" hint-placeholder-val="{{ false }}">
+      <section data-screen-label="Calendar" style="">
+        <header data-reveal="" style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;">
+          <div><div style="font-family:var(--mono);font-size:11px;letter-spacing:0.18em;color:var(--accent);margin-bottom:9px;">TIMELINE</div><h1 style="font-family:var(--display);font-weight:700;font-size:clamp(28px,3.6vw,38px);letter-spacing:-0.03em;margin:0;">{{ calLabel }}</h1></div>
+          <div style="display:flex;gap:8px;"><button onClick="{{ calPrev }}" style="width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-size:16px;" style-hover="border-color:var(--line2);">‹</button><button onClick="{{ calNext }}" style="width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-size:16px;" style-hover="border-color:var(--line2);">›</button></div>
+        </header>
+        <div data-reveal="" style="border:1px solid var(--line);background:var(--card);border-radius:18px;padding:18px;">
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-bottom:8px;">
+            <sc-for list="{{ weekHeads }}" as="w" hint-placeholder-count="7"><div style="font-family:var(--mono);font-size:9.5px;letter-spacing:0.12em;color:var(--ink3);text-align:center;padding-bottom:4px;">{{ w }}</div></sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:7px;">
+            <sc-for list="{{ calDays }}" as="c" hint-placeholder-count="35"><div onClick="{{ c.onClick }}" style="{{ c.style }}"><span style="{{ c.numStyle }}">{{ c.num }}</span><sc-if value="{{ c.dot }}" hint-placeholder-val="{{ false }}"><span style="width:5px;height:5px;border-radius:50%;background:var(--accent);margin-top:auto;"></span></sc-if></div></sc-for>
+          </div>
+        </div>
+      </section>
+      </sc-if>
+
+      <!-- NOTEBOOK -->
+      <sc-if value="{{ isNote }}" hint-placeholder-val="{{ false }}">
+      <section data-screen-label="Memory Notebook" style="">
+        <header data-reveal="" style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;"><div><div style="font-family:var(--mono);font-size:11px;letter-spacing:0.18em;color:var(--accent);margin-bottom:9px;">MEMORY</div><h1 style="font-family:var(--display);font-weight:700;font-size:clamp(28px,3.6vw,38px);letter-spacing:-0.03em;margin:0;">Notebook</h1></div><button onClick="{{ addNote }}" style="display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:13.5px;color:var(--ink);background:var(--card);border:1px solid var(--line2);border-radius:10px;padding:11px 16px;cursor:pointer;" style-hover="border-color:var(--accent);">+ New note</button></header>
+        <div style="columns:2;column-gap:16px;">
+          <sc-for list="{{ notes }}" as="n" hint-placeholder-count="4">
+            <div data-reveal="" style="break-inside:avoid;margin-bottom:16px;border:1px solid var(--line);background:var(--card);border-radius:15px;padding:18px;">
+              <span style="{{ n.tagStyle }}">{{ n.tag }}</span>
+              <h3 style="font-family:var(--display);font-weight:600;font-size:16px;letter-spacing:-0.01em;margin:12px 0 8px;">{{ n.title }}</h3>
+              <p style="margin:0;color:var(--ink2);font-size:13.5px;line-height:1.6;">{{ n.body }}</p>
+              <div style="font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:14px;">{{ n.date }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+      </sc-if>
+
+      <!-- INSIGHTS -->
+      <sc-if value="{{ isInsight }}" hint-placeholder-val="{{ false }}">
+      <section data-screen-label="Study Insights" style="">
+        <header data-reveal="" style="margin-bottom:22px;"><div style="font-family:var(--mono);font-size:11px;letter-spacing:0.18em;color:var(--accent);margin-bottom:9px;">SYNTHESIS ENGINE</div><h1 style="font-family:var(--display);font-weight:700;font-size:clamp(28px,3.6vw,38px);letter-spacing:-0.03em;margin:0;">Study Insights</h1></header>
+        <div data-reveal="" style="position:relative;overflow:hidden;border:1px solid var(--line2);background:linear-gradient(115deg,var(--accent2),transparent 76%),var(--card);border-radius:18px;padding:24px 26px;margin-bottom:20px;">
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;"><div style="flex:1;min-width:230px;"><h2 style="font-family:var(--display);font-weight:600;font-size:18px;margin:0 0 6px;">Synthesise this week's signal</h2><p style="margin:0;color:var(--ink2);font-size:13.5px;">Read 6 cleared tasks · 4 notes · 3h 20m focus and surface what compounds.</p></div><button onClick="{{ synth }}" style="display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:13.5px;color:#fff;background:var(--accent);border:none;border-radius:11px;padding:12px 19px;cursor:pointer;transition:transform .15s var(--ease);" style-hover="transform:translateY(-1px);">{{ synthLabel }}</button></div>
+          <sc-if value="{{ scanning }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:0;right:0;top:0;height:50px;background:linear-gradient(180deg,var(--accent2),transparent);animation:scan 1.5s ease-in-out infinite;pointer-events:none;"></div></sc-if>
+        </div>
+        <sc-if value="{{ scanning }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:13px;padding:26px;color:var(--ink2);"><span style="width:17px;height:17px;border:2px solid var(--line2);border-top-color:var(--accent);border-radius:50%;animation:spinSlow .8s linear infinite;"></span><span style="font-family:var(--mono);font-size:13px;">Reading the patterns across your week…</span></div></sc-if>
+        <sc-if value="{{ insightDone }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:fadeIn .5s ease both;">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:18px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--accent);"></span><span style="font-family:var(--mono);font-size:11px;letter-spacing:0.14em;color:var(--ink3);">SYNTHESIS COMPLETE · 1.8s</span></div>
+            <sc-for list="{{ insightBlocks }}" as="b" hint-placeholder-count="3"><div style="border-left:2px solid var(--accent);padding:2px 0 2px 18px;margin-bottom:20px;"><h3 style="font-family:var(--display);font-weight:600;font-size:17px;margin:0 0 8px;">{{ b.head }}</h3><p style="margin:0;color:var(--ink2);font-size:14.5px;line-height:1.65;max-width:62ch;">{{ b.body }}</p></div></sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ insightIdle }}" hint-placeholder-val="{{ true }}"><div style="border:1px dashed var(--line2);border-radius:16px;padding:48px 30px;text-align:center;"><div style="width:50px;height:50px;margin:0 auto 16px;border-radius:15px;background:var(--accent2);display:flex;align-items:center;justify-content:center;"><div style="width:16px;height:16px;border:2px solid var(--accent);border-radius:5px;transform:rotate(45deg);"></div></div><h3 style="font-family:var(--display);font-weight:600;font-size:17px;margin:0 0 7px;">No synthesis yet</h3><p style="margin:0 auto;color:var(--ink2);font-size:14px;max-width:42ch;">Run the engine to turn this week's activity into a focused read on what's working.</p></div></sc-if>
+      </section>
+      </sc-if>
+
+      <!-- SETTINGS -->
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+      <section data-screen-label="Settings" style="">
+        <header data-reveal="" style="margin-bottom:24px;"><div style="font-family:var(--mono);font-size:11px;letter-spacing:0.18em;color:var(--accent);margin-bottom:9px;">ENVIRONMENT</div><h1 style="font-family:var(--display);font-weight:700;font-size:clamp(28px,3.6vw,38px);letter-spacing:-0.03em;margin:0;">Settings</h1></header>
+
+        <div data-reveal="" style="margin-bottom:30px;">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.14em;color:var(--ink3);margin-bottom:14px;">THEME</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;">
+            <sc-for list="{{ themeCards }}" as="th" hint-placeholder-count="5">
+              <button onClick="{{ th.onClick }}" style="{{ th.cardStyle }}" style-hover="border-color:var(--line2);">
+                <div style="height:74px;border-radius:11px;overflow:hidden;position:relative;margin-bottom:13px;background:{{ th.preview }};">
+                  <div style="position:absolute;top:11px;left:12px;width:38%;height:7px;border-radius:4px;background:{{ th.pInk }};"></div>
+                  <div style="position:absolute;top:24px;left:12px;width:24%;height:7px;border-radius:4px;background:{{ th.pAccent }};"></div>
+                  <div style="position:absolute;bottom:11px;right:12px;width:26px;height:26px;border-radius:8px;background:{{ th.pAccent }};"></div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;"><div><div style="font-family:var(--display);font-weight:600;font-size:14.5px;color:var(--ink);">{{ th.name }}</div><div style="font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:2px;">{{ th.desc }}</div></div><sc-if value="{{ th.active }}" hint-placeholder-val="{{ false }}"><span style="width:19px;height:19px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"></path></svg></span></sc-if></div>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div data-reveal="" style="display:flex;flex-direction:column;gap:12px;max-width:520px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border:1px solid var(--line);background:var(--card);border-radius:14px;">
+            <div><div style="font-weight:600;font-size:14.5px;">Background motion</div><div style="font-size:12.5px;color:var(--ink2);margin-top:3px;">Slow drifting ambient field behind the app.</div></div>
+            <button onClick="{{ toggleBg }}" style="{{ bgToggleStyle }}"><span style="{{ bgKnobStyle }}"></span></button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border:1px solid var(--line);background:var(--card);border-radius:14px;">
+            <div><div style="font-weight:600;font-size:14.5px;">Accent</div><div style="font-size:12.5px;color:var(--ink2);margin-top:3px;">A pop of colour for highlights and focus.</div></div>
+            <div style="display:flex;gap:9px;"><sc-for list="{{ accents }}" as="ac" hint-placeholder-count="4"><button onClick="{{ ac.onClick }}" style="{{ ac.style }}"></button></sc-for></div>
+          </div>
+        </div>
+      </section>
+      </sc-if>
+
+    </div>
+  </main>
+
+  <sc-if value="{{ showPanel }}" hint-placeholder-val="{{ true }}">
+  <!-- ===== RIGHT FOCUS PANEL ===== -->
+  <aside style="position:relative;z-index:3;width:312px;flex-shrink:0;height:100%;overflow-y:auto;padding:26px 22px;border-left:1px solid var(--line);background:var(--surf);backdrop-filter:blur(14px);display:flex;flex-direction:column;gap:18px;">
+    <div style="border:1px solid var(--line);background:var(--card);border-radius:18px;padding:22px 20px;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;color:var(--ink3);align-self:flex-start;margin-bottom:8px;">FOCUS TIMER</div>
+      <div style="position:relative;width:186px;height:186px;margin:6px 0 16px;">
+        <svg width="186" height="186" viewBox="0 0 186 186" style="transform:rotate(-90deg);">
+          <circle cx="93" cy="93" r="82" fill="none" stroke="var(--line)" stroke-width="7"></circle>
+          <circle cx="93" cy="93" r="82" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-dasharray="515.2" stroke-dashoffset="{{ pomoOffset }}" style="transition:stroke-dashoffset .95s linear;"></circle>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><span style="font-family:var(--mono);font-weight:500;font-size:44px;letter-spacing:-0.02em;">{{ pomoText }}</span><span style="font-family:var(--mono);font-size:10px;letter-spacing:0.16em;color:var(--ink3);margin-top:5px;">{{ pomoPhase }}</span></div>
+      </div>
+      <div style="display:flex;gap:9px;width:100%;">
+        <button onClick="{{ togglePomo }}" style="flex:1;font-family:var(--body);font-weight:600;font-size:13.5px;color:#fff;background:var(--accent);border:none;border-radius:11px;padding:11px;cursor:pointer;transition:transform .15s var(--ease);" style-hover="transform:translateY(-1px);">{{ pomoBtn }}</button>
+        <button onClick="{{ resetPomo }}" style="width:46px;font-size:15px;color:var(--ink2);background:var(--surf2);border:1px solid var(--line);border-radius:11px;cursor:pointer;" style-hover="color:var(--ink);">↺</button>
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--line);background:var(--card);border-radius:16px;padding:20px;position:relative;overflow:hidden;">
+      <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:0.16em;color:var(--accent);margin-bottom:12px;">SIGNAL OF THE DAY</div>
+      <p style="font-family:var(--serif);font-style:italic;font-size:17px;line-height:1.4;margin:0 0 14px;color:var(--ink);">{{ quote.text }}</p>
+      <div style="font-family:var(--mono);font-size:10.5px;color:var(--ink3);">— {{ quote.by }}</div>
+    </div>
+
+    <div style="border:1px solid var(--line);background:var(--card);border-radius:16px;padding:18px 20px;">
+      <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:0.16em;color:var(--ink3);margin-bottom:14px;">TODAY AT A GLANCE</div>
+      <div style="display:flex;justify-content:space-between;">
+        <div><div style="font-family:var(--mono);font-size:9px;color:var(--ink3);">FOCUSED</div><div style="font-family:var(--display);font-weight:700;font-size:20px;margin-top:3px;">{{ focusToday }}</div></div>
+        <div style="text-align:right;"><div style="font-family:var(--mono);font-size:9px;color:var(--ink3);">CLEARED</div><div style="font-family:var(--display);font-weight:700;font-size:20px;margin-top:3px;">{{ doneCount }}/{{ totalCount }}</div></div>
+      </div>
+    </div>
+  </aside>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;mood&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Porcelain&quot;,&quot;Bone&quot;,&quot;Sage&quot;,&quot;Lavender&quot;,&quot;Slate&quot;,&quot;Ink&quot;,&quot;Midnight&quot;,&quot;Rose&quot;],&quot;default&quot;:&quot;Porcelain&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Feel&quot;},&quot;typeface&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Syne&quot;,&quot;Bricolage&quot;,&quot;Space Grotesk&quot;,&quot;Sora&quot;,&quot;Newsreader&quot;,&quot;Instrument&quot;],&quot;default&quot;:&quot;Space Grotesk&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Typography&quot;},&quot;layout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Cockpit&quot;,&quot;Zen&quot;],&quot;default&quot;:&quot;Zen&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;nav&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Full&quot;,&quot;Rail&quot;],&quot;default&quot;:&quot;Full&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;width&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Cozy&quot;,&quot;Default&quot;,&quot;Wide&quot;],&quot;default&quot;:&quot;Cozy&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Layout&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.rootRef=React.createRef(); this.bgRef=React.createRef(); this.mainRef=React.createRef(); this.viewRef=React.createRef();
+    const today=new Date(); this.today=today;
+    this.moodMap={Porcelain:'porcelain',Bone:'bone',Sage:'sage',Lavender:'lavender',Slate:'slate',Ink:'ink',Midnight:'midnight',Rose:'rose'};
+    let savedTheme=(this.props.mood&&this.moodMap[this.props.mood])||'porcelain', savedBg=true;
+    try{ if(!this.props.mood) savedTheme=localStorage.getItem('bx_theme')||savedTheme; savedBg=localStorage.getItem('bx_bg')!=='0'; }catch(e){}
+    this.state={
+      view:'today', theme:savedTheme, bgOn:savedBg, accent:null,
+      filter:'all', draft:'',
+      selDay:today.getDate(), calY:today.getFullYear(), calM:today.getMonth(),
+      pomoLeft:1500, pomoTotal:1500, pomoRun:false,
+      insight:'idle',
+      tasks:[
+        {id:1,title:'Review Q3 architecture doc',cat:'Deep Work',pri:'HIGH',time:'09:00',done:false},
+        {id:2,title:'Sync with the design team',cat:'Meetings',pri:'MED',time:'11:30',done:false},
+        {id:3,title:'Ship Task Workspace v2',cat:'Deep Work',pri:'HIGH',time:'14:00',done:false},
+        {id:4,title:'Reply to the investor thread',cat:'Admin',pri:'LOW',time:'16:00',done:true},
+        {id:5,title:'Read: attention papers',cat:'Learning',pri:'MED',time:'18:30',done:false},
+        {id:6,title:'Plan tomorrow, then sign off',cat:'Wind-down',pri:'LOW',time:'19:30',done:false},
+      ],
+      rituals:[
+        {id:1,label:'Deep work block',done:true},
+        {id:2,label:'Read 20 pages',done:true},
+        {id:3,label:'Movement session',done:false},
+        {id:4,label:'End-of-day review',done:false},
+      ],
+      notes:[
+        {id:1,tag:'IDEA',title:'Date strip as a dial',body:'Scrubbing the date strip could re-key every list — feels physical, like turning an instrument.',date:'JUN 26'},
+        {id:2,tag:'RESEARCH',title:'Attention is a budget',body:'Treat focus as depletable. The directive should spend the budget, not just list it.',date:'JUN 24'},
+        {id:3,tag:'LOG',title:'Shipped the focus ring',body:'Stroke-dashoffset animation lands clean under 300ms. Kept the easing calm.',date:'JUN 23'},
+        {id:4,tag:'IDEA',title:'Synthesis as a read',body:'Insights should feel like a short letter about your week, never a chat bubble.',date:'JUN 21'},
+      ],
+    };
+    this.THEMES={
+      porcelain:{name:'Porcelain',desc:'Cool daylight',dark:false,accent:'#2438E8',blobs:['#8DA6FF','#B9A8FF','#7FD4E0'],blobOp:0.6,
+        vars:{'--bg':'#EAEDF2','--bg2':'#DFE4EA','--surf':'rgba(255,255,255,0.55)','--surf2':'rgba(255,255,255,0.85)','--card':'#F6F8FB','--line':'rgba(14,18,24,0.10)','--line2':'rgba(14,18,24,0.18)','--ink':'#0E1218','--ink2':'rgba(14,18,24,0.62)','--ink3':'rgba(14,18,24,0.40)'}},
+      bone:{name:'Bone',desc:'Warm paper',dark:false,accent:'#C8451A',blobs:['#F2B87E','#E88A54','#E8C98A'],blobOp:0.5,
+        vars:{'--bg':'#ECE7DD','--bg2':'#E4DED2','--surf':'rgba(255,255,255,0.45)','--surf2':'rgba(255,252,246,0.85)','--card':'#FBF8F1','--line':'rgba(22,19,12,0.12)','--line2':'rgba(22,19,12,0.20)','--ink':'#16130C','--ink2':'rgba(22,19,12,0.62)','--ink3':'rgba(22,19,12,0.40)'}},
+      sage:{name:'Sage',desc:'Calm green',dark:false,accent:'#2F7D52',blobs:['#93C99A','#C0DB9E','#7BC4B4'],blobOp:0.56,
+        vars:{'--bg':'#E7ECE4','--bg2':'#DDE4D9','--surf':'rgba(255,255,255,0.45)','--surf2':'rgba(252,255,250,0.85)','--card':'#F4F7F1','--line':'rgba(20,30,22,0.11)','--line2':'rgba(20,30,22,0.19)','--ink':'#15201A','--ink2':'rgba(21,32,26,0.62)','--ink3':'rgba(21,32,26,0.40)'}},
+      ink:{name:'Ink',desc:'Warm dark',dark:true,accent:'#F0B04C',blobs:['#6E4818','#8A5316','#4A3212'],blobOp:0.6,
+        vars:{'--bg':'#14110B','--bg2':'#191510','--surf':'rgba(255,255,255,0.04)','--surf2':'rgba(255,255,255,0.07)','--card':'#1C1810','--line':'rgba(236,231,221,0.12)','--line2':'rgba(236,231,221,0.22)','--ink':'#ECE7DD','--ink2':'rgba(236,231,221,0.62)','--ink3':'rgba(236,231,221,0.40)'}},
+      midnight:{name:'Midnight',desc:'Cool dark',dark:true,accent:'#93A6FF',blobs:['#2A4A96','#432E82','#1E6A82'],blobOp:0.62,
+        vars:{'--bg':'#0E1117','--bg2':'#12161E','--surf':'rgba(255,255,255,0.04)','--surf2':'rgba(255,255,255,0.07)','--card':'#161B24','--line':'rgba(231,236,243,0.12)','--line2':'rgba(231,236,243,0.22)','--ink':'#E7ECF3','--ink2':'rgba(231,236,243,0.62)','--ink3':'rgba(231,236,243,0.40)'}},
+      lavender:{name:'Lavender',desc:'Soft violet',dark:false,accent:'#6D3FE0',blobs:['#C7ADF7','#E0B4EC','#B0A8FA'],blobOp:0.56,
+        vars:{'--bg':'#ECEAF3','--bg2':'#E3DEF0','--surf':'rgba(255,255,255,0.50)','--surf2':'rgba(255,255,255,0.85)','--card':'#F6F3FB','--line':'rgba(26,23,38,0.10)','--line2':'rgba(26,23,38,0.18)','--ink':'#1A1726','--ink2':'rgba(26,23,38,0.62)','--ink3':'rgba(26,23,38,0.40)'}},
+      slate:{name:'Slate',desc:'Cool grey',dark:false,accent:'#1F6BD0',blobs:['#9BB8E4','#B4C6DE','#8FCCDC'],blobOp:0.54,
+        vars:{'--bg':'#E8EBEF','--bg2':'#DEE3E9','--surf':'rgba(255,255,255,0.50)','--surf2':'rgba(255,255,255,0.85)','--card':'#F4F6F9','--line':'rgba(20,24,31,0.10)','--line2':'rgba(20,24,31,0.18)','--ink':'#14181F','--ink2':'rgba(20,24,31,0.62)','--ink3':'rgba(20,24,31,0.40)'}},
+      rose:{name:'Ros\u00e9',desc:'Dusk mauve',dark:true,accent:'#F0A8CC',blobs:['#5A2A4E','#72315A','#44284E'],blobOp:0.6,
+        vars:{'--bg':'#1A1620','--bg2':'#221A2A','--surf':'rgba(255,255,255,0.04)','--surf2':'rgba(255,255,255,0.07)','--card':'#241B2C','--line':'rgba(232,222,233,0.12)','--line2':'rgba(232,222,233,0.22)','--ink':'#E8DEE9','--ink2':'rgba(232,222,233,0.62)','--ink3':'rgba(232,222,233,0.40)'}},
+    };
+    this.accentOpts=['#1E2BD4','#C2491E','#3E7D5A','#8B2BD4'];
+  }
+  componentDidMount(){ this.applyTheme(this.state.theme); this.applyType(); this.pTick=setInterval(()=>{ if(this.state.pomoRun&&this.state.pomoLeft>0){ this.setState(s=>({pomoLeft:s.pomoLeft-1,pomoRun:s.pomoLeft-1>0})); } },1000); }
+  componentDidUpdate(prev){ if(prev.mood!==this.props.mood && this.props.mood){ const k=this.moodMap[this.props.mood]; if(k && k!==this.state.theme){ this.setState({theme:k,accent:null},()=>this.applyTheme(k)); } } if(prev.ambient!==this.props.ambient){ this.applyAmbient(); } if(prev.typeface!==this.props.typeface||prev.width!==this.props.width||prev.nav!==this.props.nav){ this.applyType(); } }
+  componentWillUnmount(){ clearInterval(this.pTick); }
+
+  applyTheme(key){
+    const t=this.THEMES[key]||this.THEMES.porcelain; const r=document.documentElement;
+    Object.entries(t.vars).forEach(([k,v])=>r.style.setProperty(k,v));
+    const acc=this.state.accent||t.accent;
+    r.style.setProperty('--accent',acc);
+    r.style.setProperty('--accent2',this.rgba(acc,t.dark?0.16:0.10));
+    r.style.setProperty('--b1',t.blobs[0]); r.style.setProperty('--b2',t.blobs[1]); r.style.setProperty('--b3',t.blobs[2]);
+    document.body.style.background=t.vars['--bg'];
+    this.applyAmbient();
+  }
+  applyAmbient(){
+    const t=this.THEMES[this.state.theme]||this.THEMES.porcelain;
+    const opMul=1.7, durs=['13s','17s','21s'], play='running';
+    document.documentElement.style.setProperty('--blobOp', String(this.state.bgOn? Math.min(1,t.blobOp*opMul):0));
+    const c=this.bgRef.current; if(c){ c.querySelectorAll('.bgblob').forEach((el,i)=>{ el.style.animationDuration=durs[i]||durs[0]; el.style.animationPlayState=play; }); }
+  }
+  applyType(){
+    const fonts={Syne:"'Syne',sans-serif",Bricolage:"'Bricolage Grotesque',sans-serif","Space Grotesk":"'Space Grotesk',sans-serif",Sora:"'Sora',sans-serif",Newsreader:"'Newsreader',serif",Instrument:"'Instrument Serif',serif"};
+    const r=document.documentElement;
+    r.style.setProperty('--display', fonts[this.props.typeface||'Space Grotesk']||fonts['Space Grotesk']);
+    const widths={Cozy:'860px',Default:'1000px',Wide:'1180px'};
+    r.style.setProperty('--contentW', widths[this.props.width||'Cozy']||'860px');
+    r.style.setProperty('--navW', (this.props.nav||'Full')==='Rail' ? '74px' : '248px');
+  }
+  rgba(hex,a){ hex=hex.replace('#',''); if(hex.length===3) hex=hex.split('').map(c=>c+c).join(''); const n=parseInt(hex,16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'; }
+
+  setView(v){ this.setState({view:v}); if(this.mainRef.current) this.mainRef.current.scrollTop=0; }
+  setTheme(k){ this.setState({theme:k,accent:null},()=>this.applyTheme(k)); try{localStorage.setItem('bx_theme',k);}catch(e){} }
+  setAccent(hex){ this.setState({accent:hex},()=>this.applyTheme(this.state.theme)); }
+  toggleBg(){ this.setState(s=>({bgOn:!s.bgOn}),()=>{ this.applyTheme(this.state.theme); try{localStorage.setItem('bx_bg',this.state.bgOn?'1':'0');}catch(e){} }); }
+  toggleTask(id){ this.setState(s=>({tasks:s.tasks.map(t=>t.id===id?{...t,done:!t.done}:t)})); }
+  toggleRitual(id){ this.setState(s=>({rituals:s.rituals.map(r=>r.id===id?{...r,done:!r.done}:r)})); }
+  setFilter(f){ this.setState({filter:f}); }
+  onDraft(e){ this.setState({draft:e.target.value}); }
+  onDraftKey(e){ if(e.key==='Enter'&&this.state.draft.trim()){ const t={id:Date.now(),title:this.state.draft.trim(),cat:'Inbox',pri:'MED',time:'—',done:false}; this.setState(s=>({tasks:[t,...s.tasks],draft:''})); } }
+  togglePomo(){ this.setState(s=>({pomoRun:s.pomoLeft>0?!s.pomoRun:false})); }
+  resetPomo(){ this.setState({pomoLeft:1500,pomoRun:false}); }
+  synth(){ this.setState({insight:'scanning'}); setTimeout(()=>this.setState({insight:'done'}),1800); }
+  addNote(){ const tags=['IDEA','LOG','RESEARCH']; const n={id:Date.now(),tag:tags[Math.floor(Math.random()*3)],title:'New memory',body:'Start writing — tag it, and the synthesis engine will fold it into next week\u2019s read.',date:'JUST NOW'}; this.setState(s=>({notes:[n,...s.notes]})); }
+  calStep(d){ this.setState(s=>{ let m=s.calM+d,y=s.calY; if(m<0){m=11;y--;} if(m>11){m=0;y++;} return {calM:m,calY:y}; }); }
+
+  fmt(sec){ const m=Math.floor(sec/60),s=sec%60; return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'); }
+  priStyle(p){ const c=p==='HIGH'?'#D4521E':p==='MED'?'var(--accent)':'var(--ink3)'; const b=p==='HIGH'?'rgba(212,82,30,0.12)':p==='MED'?'var(--accent2)':'var(--surf2)'; return 'font-family:var(--mono);font-size:9px;letter-spacing:0.06em;color:'+c+';background:'+b+';padding:3px 8px;border-radius:6px;flex-shrink:0;'; }
+  barColor(p){ return p==='HIGH'?'#D4521E':p==='MED'?'var(--accent)':'var(--ink3)'; }
+
+  taskVM(t,wide){
+    return {...t,
+      toggle:()=>this.toggleTask(t.id),
+      rowStyle:'display:flex;align-items:center;gap:13px;padding:14px 16px;border:1px solid var(--line);border-radius:13px;background:var(--card);opacity:'+(t.done?'0.55':'1')+';transition:opacity .3s,border-color .2s;',
+      boxStyle:'width:21px;height:21px;flex-shrink:0;border-radius:7px;display:flex;align-items:center;justify-content:center;border:1.5px solid '+(t.done?'var(--accent)':'var(--line2)')+';background:'+(t.done?'var(--accent)':'transparent')+';cursor:pointer;transition:all .2s;',
+      barStyle:wide?'width:3px;height:30px;border-radius:3px;flex-shrink:0;background:'+this.barColor(t.pri)+';':'display:none;',
+      titleStyle:'font-size:14.5px;font-weight:500;color:var(--ink);'+(t.done?'text-decoration:line-through;color:var(--ink3);':''),
+      priStyle:this.priStyle(t.pri),
+    };
+  }
+
+  renderVals(){
+    const s=this.state, v=s.view, T=this.THEMES;
+    const h=this.today.getHours();
+    const greeting=h<5?'Still up':h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+    const dateLong=this.today.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}).toUpperCase();
+    const done=s.tasks.filter(t=>t.done).length, total=s.tasks.length, open=total-done;
+    const pct=total?Math.round(done/total*100):0;
+
+    const ic={
+      today:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+      tasks:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m4 7 2 2 4-4"/><path d="m4 17 2 2 4-4"/><path d="M13 6h7M13 18h7"/></svg>',
+      cal:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9h18M8 2.5v4M16 2.5v4"/></svg>',
+      note:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h11l3 3V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>',
+      ins:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-3.5 10.9c.5.4.5 1 .5 1.6V17h6v-1.5c0-.6 0-1.2.5-1.6A6 6 0 0 0 12 3Z"/><path d="M9.5 20.5h5"/></svg>',
+      set:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M21.5 12h-3M5.5 12h-3M18.5 5.5l-2 2M7.5 16.5l-2 2M18.5 18.5l-2-2M7.5 7.5l-2-2"/></svg>',
+    };
+    const navDef=[['today','Today','today',null],['tasks','Tasks','tasks',open?String(open):null],['cal','Calendar','cal',null],['note','Notebook','note',null],['ins','Insights','ins',null],['set','Settings','set',null]];
+    const rail=(this.props.nav||'Full')==='Rail';
+    const navItems=navDef.map(([key,label,icKey,badge])=>{ const active=v===key; return { label, badge, showBadge:!!badge&&!rail, icon:ic[icKey], iconColor:active?'var(--accent)':'currentColor',
+      onClick:()=>this.setView(key),
+      style:'position:relative;display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border:none;border-radius:11px;cursor:pointer;font-family:var(--body);font-size:13.5px;font-weight:'+(active?600:500)+';background:'+(active?'var(--accent2)':'transparent')+';color:'+(active?'var(--ink)':'var(--ink2)')+';justify-content:'+(rail?'center':'flex-start')+';transition:all .15s;' };
+    });
+
+    // date strip
+    const wds=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    const base=new Date(this.today); base.setDate(base.getDate()-base.getDay());
+    const loads=[1,3,4,2,3,1,0]; const monthAbbr=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const week=[]; for(let i=0;i<7;i++){ const d=new Date(base); d.setDate(base.getDate()+i);
+      const isToday=d.getDate()===this.today.getDate()&&d.getMonth()===this.today.getMonth();
+      const isSel=d.getDate()===s.selDay&&d.getMonth()===this.today.getMonth();
+      const load=loads[i]; const pips=[];
+      const pn=Math.min(load,3);
+      for(let b=0;b<pn;b++){ pips.push('width:3.5px;height:3.5px;border-radius:50%;background:'+(isToday?'#fff':'var(--accent)')+';'); }
+      week.push({ wd:wds[i], n:d.getDate(), pips, onClick:()=>this.setState({selDay:d.getDate()}),
+        wdStyle:'color:'+(isToday?'rgba(255,255,255,0.8)':'var(--ink3)')+';',
+        nStyle:'color:'+(isToday?'#fff':(isSel?'var(--accent)':'var(--ink)'))+';',
+        style:'display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 0 10px;border:none;border-radius:15px;cursor:pointer;background:'+(isToday?'var(--accent)':(isSel?'var(--surf2)':'transparent'))+';box-shadow:'+(isSel&&!isToday?'inset 0 0 0 1.5px var(--accent)':'none')+';transition:all .2s var(--ease);' }); }
+    const weekTotal=loads.reduce((a,b)=>a+b,0)+' tasks';
+    const selDate=new Date(this.today.getFullYear(),this.today.getMonth(),s.selDay);
+    const selDayLong=selDate.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+    const selLoad=loads[selDate.getDay()]!==undefined?loads[selDate.getDay()]:0;
+    const agendaPool=[{time:'09:00',title:'Architecture review',dur:'90m',accent:true},{time:'11:30',title:'Design sync',dur:'30m'},{time:'14:00',title:'Deep work — Workspace v2',dur:'2h'},{time:'16:30',title:'Investor thread',dur:'20m'}];
+    const agenda=agendaPool.slice(0,Math.min(selLoad,4)).map((a,i)=>({...a, dot:i===0?'var(--accent)':'var(--line2)'}));
+    const agendaEmpty=agenda.length===0;
+
+    // tasks
+    const todayTasks=s.tasks.map(t=>this.taskVM(t,false));
+    let ft=s.tasks;
+    if(s.filter==='today') ft=s.tasks.filter(t=>!t.done);
+    else if(s.filter==='high') ft=s.tasks.filter(t=>t.pri==='HIGH');
+    else if(s.filter==='done') ft=s.tasks.filter(t=>t.done);
+    else if(s.filter==='deep') ft=s.tasks.filter(t=>t.cat==='Deep Work');
+    const filteredTasks=ft.map(t=>this.taskVM(t,true));
+    const filters=[['all','All',s.tasks.length],['today','Active',s.tasks.filter(t=>!t.done).length],['high','High',s.tasks.filter(t=>t.pri==='HIGH').length],['deep','Deep Work',s.tasks.filter(t=>t.cat==='Deep Work').length],['done','Done',s.tasks.filter(t=>t.done).length]].map(([k,label,count])=>({label,count,onClick:()=>this.setFilter(k),
+      style:'font-family:var(--body);font-size:13px;font-weight:500;padding:9px 15px;border-radius:10px;cursor:pointer;border:1px solid '+(s.filter===k?'var(--accent)':'var(--line)')+';background:'+(s.filter===k?'var(--accent2)':'var(--card)')+';color:'+(s.filter===k?'var(--ink)':'var(--ink2)')+';transition:all .15s;'}));
+
+    // rituals
+    const rituals=s.rituals.map(r=>({...r, toggle:()=>this.toggleRitual(r.id),
+      dotStyle:'width:20px;height:20px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid '+(r.done?'var(--accent)':'var(--line2)')+';background:'+(r.done?'var(--accent)':'transparent')+';transition:all .2s;',
+      labelStyle:'flex:1;font-size:13.5px;font-weight:500;color:'+(r.done?'var(--ink3)':'var(--ink)')+';'+(r.done?'text-decoration:line-through;':'')}));
+
+    // notes
+    const tagColor=tg=>tg==='IDEA'?'var(--accent)':tg==='RESEARCH'?'#3E7D5A':tg==='LOG'?'#C2491E':'var(--ink2)';
+    const notes=s.notes.map(n=>({...n, tagStyle:'font-family:var(--mono);font-size:8.5px;letter-spacing:0.1em;font-weight:500;color:#fff;background:'+tagColor(n.tag)+';padding:3px 8px;border-radius:5px;'}));
+
+    // calendar
+    const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const calLabel=monthNames[s.calM]+' '+s.calY;
+    const first=new Date(s.calY,s.calM,1).getDay(); const dim=new Date(s.calY,s.calM+1,0).getDate();
+    const calDays=[]; for(let i=0;i<first;i++) calDays.push({num:'',style:'aspect-ratio:1;',numStyle:'',dot:false,onClick:()=>{}});
+    for(let d=1;d<=dim;d++){ const isTod=d===this.today.getDate()&&s.calM===this.today.getMonth()&&s.calY===this.today.getFullYear(); const isSel=d===s.selDay&&s.calM===this.today.getMonth(); calDays.push({ num:d, dot:[3,9,14,18,23,26].includes(d), onClick:()=>this.setState({selDay:d}),
+      style:'aspect-ratio:1;display:flex;flex-direction:column;align-items:center;padding:7px;border-radius:10px;cursor:pointer;border:1px solid '+(isSel?'var(--accent)':'transparent')+';background:'+(isTod?'var(--accent2)':'transparent')+';transition:all .15s;',
+      numStyle:'font-family:var(--mono);font-size:12px;color:'+(isTod?'var(--accent)':'var(--ink2)')+';font-weight:'+(isTod?600:400)+';' }); }
+    const weekHeads=['S','M','T','W','T','F','S'];
+
+    // theme cards
+    const themeCards=Object.entries(T).map(([k,t])=>({ name:t.name, desc:t.desc, active:s.theme===k, onClick:()=>this.setTheme(k),
+      preview:t.vars['--bg'], pInk:t.vars['--ink'], pAccent:t.accent,
+      cardStyle:'text-align:left;padding:13px;border-radius:15px;cursor:pointer;border:1px solid '+(s.theme===k?'var(--accent)':'var(--line)')+';background:var(--card);transition:all .18s;' }));
+
+    const curAcc=s.accent||T[s.theme].accent;
+    const accents=this.accentOpts.map(hex=>({ onClick:()=>this.setAccent(hex),
+      style:'width:26px;height:26px;border-radius:8px;cursor:pointer;background:'+hex+';border:2px solid '+(curAcc.toLowerCase()===hex.toLowerCase()?'var(--ink)':'transparent')+';transition:all .15s;' }));
+
+    const bgOn=s.bgOn;
+    const insightBlocks=[
+      {head:'Your mornings are your engine.',body:'Four of six cleared tasks landed before noon. The afternoon is where focus thins — protect the morning block and let admin slide to the back half of the day.'},
+      {head:'Deep work is clustering well.',body:'Two long sessions on the architecture review carried most of your focus minutes. Keep batching similar work; the context-switching tax is where the hour leaks away.'},
+      {head:'One note keeps resurfacing.',body:'\u201CAttention is a budget\u201D ties three of this week\u2019s entries together. It\u2019s worth turning into a working principle rather than a passing thought.'},
+    ];
+
+    return {
+      rootRef:this.rootRef, bgRef:this.bgRef, mainRef:this.mainRef, viewRef:this.viewRef,
+      showPanel:(this.props.layout||'Zen')!=='Zen',
+      isToday:v==='today', isTasks:v==='tasks', isCal:v==='cal', isNote:v==='note', isInsight:v==='ins', isSettings:v==='set',
+      navItems, showNavText:!rail, pct, greeting, dateLong, openCount:open, focusToday:'3h 20m', doneCount:done, totalCount:total,
+      week, weekTotal, selDayLong, agenda, agendaEmpty,
+      directive:{title:'Ship Task Workspace v2 — it unblocks three downstream tasks.', why:'It\u2019s the highest-leverage thing on the board today, and three other tasks are waiting on it.'},
+      goInsights:()=>this.setView('ins'),
+      todayTasks, rituals, filters, filteredTasks, draft:s.draft, onDraft:(e)=>this.onDraft(e), onDraftKey:(e)=>this.onDraftKey(e),
+      calLabel, calDays, weekHeads, calPrev:()=>this.calStep(-1), calNext:()=>this.calStep(1),
+      notes, addNote:()=>this.addNote(),
+      synth:()=>this.synth(), synthLabel:s.insight==='scanning'?'Synthesising…':(s.insight==='done'?'Run again':'Synthesise'),
+      scanning:s.insight==='scanning', insightDone:s.insight==='done', insightIdle:s.insight==='idle', insightBlocks,
+      themeCards, accents,
+      toggleBg:()=>this.toggleBg(),
+      bgToggleStyle:'position:relative;width:46px;height:26px;border-radius:14px;border:none;cursor:pointer;background:'+(bgOn?'var(--accent)':'var(--line2)')+';transition:background .2s;',
+      bgKnobStyle:'position:absolute;top:3px;left:'+(bgOn?'23px':'3px')+';width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s var(--ease);',
+      pomoText:this.fmt(s.pomoLeft), pomoOffset:515.2*(1-s.pomoLeft/s.pomoTotal),
+      pomoPhase:s.pomoRun?'IN FOCUS':(s.pomoLeft<s.pomoTotal?'PAUSED':'25 MINUTES'),
+      pomoBtn:s.pomoRun?'Pause':(s.pomoLeft<s.pomoTotal?'Resume':'Start focus'),
+      togglePomo:()=>this.togglePomo(), resetPomo:()=>this.resetPomo(),
+      quote:{text:'The best focus tool is the one you stop noticing.',by:'THE BRAIN.EXE NOTE'},
+    };
+  }
+}
+</script>
+</body>
+</html>
